@@ -34,3 +34,15 @@ spec = do
         let g = (> 0.1)
             h = fromInteger
         in fmap (g . h) (x :: Either Bool Integer) == (fmap g (fmap h x))
+
+    describe "(->) a" $ do
+      it "composes the functions" $ do
+        fmap (== 1) (+ 1) 0 `shouldBe` True
+
+      it "satisfies law 1" $ property $ \x ->
+        fmap id (+ 1) x == id (+ 1) (x :: Int)
+
+      it "satisfies law 2" $ property $ \x ->
+        let g = (> 0.1)
+            h = fromInteger
+        in fmap (g . h) (+ 1) (x :: Integer) == (fmap g (fmap h (+ 1))) x
