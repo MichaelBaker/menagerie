@@ -16,6 +16,8 @@ library
   hs-source-dirs:      src
   build-depends:       base >= 4.7 && < 5
   default-language:    Haskell2010
+  exposed-modules:
+    Menagerie.Functor
 
 executable menagerie
   hs-source-dirs:      app
