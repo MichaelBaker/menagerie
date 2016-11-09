@@ -1,6 +1,6 @@
 module Menagerie.Functor where
 
-import Prelude ()
+import Prelude (Either(..))
 
 class Functor f where
   fmap :: (a -> b) -> f a -> f b
@@ -12,3 +12,7 @@ class Functor f where
 instance Functor [] where
   fmap _ []     = []
   fmap g (a:as) = g a : fmap g as
+
+instance Functor (Either l) where
+  fmap _ (Left l)  = Left l
+  fmap g (Right r) = Right (g r)

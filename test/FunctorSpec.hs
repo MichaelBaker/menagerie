@@ -10,7 +10,7 @@ spec = do
   describe "Functor" $ do
     describe "list" $ do
       it "applies the function to each element of the list" $ do
-        fmap (+ 1) [1, 2, 3] `shouldBe` [2, 3, 4]
+        fmap (== 1) [1, 2, 3] `shouldBe` [True, False, False]
 
       it "satisfies law 1" $ property $ \x ->
         fmap id x == id (x :: [Int])
@@ -19,3 +19,18 @@ spec = do
         let g = (> 0.1)
             h = fromInteger
         in fmap (g . h) (x :: [Integer]) == (fmap g (fmap h x))
+
+    describe "either" $ do
+      it "doesn't affect Left" $ do
+        fmap (+ 1) (Left 1 :: Either Int Int) `shouldBe` (Left 1 :: Either Int Int)
+
+      it "applies to the element of a Right" $ do
+        fmap (== 1) (Right 1) `shouldBe` (Right True :: Either () Bool)
+
+      it "satisfies law 1" $ property $ \x ->
+        fmap id x == id (x :: Either Bool Int)
+
+      it "satisfies law 2" $ property $ \x ->
+        let g = (> 0.1)
+            h = fromInteger
+        in fmap (g . h) (x :: Either Bool Integer) == (fmap g (fmap h x))
