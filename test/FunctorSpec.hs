@@ -46,3 +46,9 @@ spec = do
         let g = (> 0.1)
             h = fromInteger
         in fmap (g . h) (+ 1) (x :: Integer) == (fmap g (fmap h (+ 1))) x
+
+    describe "Functor composition" $ do
+      it "applies to elements of the innermost functor" $ do
+        let actual   = fmap not (Compose ([Left 1, Right True, Right False]))
+        let expected = [Left 1, Right False, Right True]
+        extract actual `shouldBe` expected

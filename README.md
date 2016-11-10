@@ -44,3 +44,21 @@ Assumptions that cannot be encoded directly in the type system are often called 
 
 * fmap id = id
 * fmap (g . h) = (fmap g) . (fmap h)
+
+These laws are meant to ensure that fmap never alters the `f` it's being applied to. The benefit of that restriction is that it makes Functors easier to use. When you write an algorithm using `fmap`, you can totally ignore the `f` because the `fmap` can't change it anyway.
+
+### Value
+
+So what's the point? How should you think about a Functor that a libary gives you to work with? When should you think about making your own Functor?
+
+Remember that abstractions have two benefits. They simplify problems and facilitate code reuse.
+
+It's subtle, but the Functor abstraction makes life easier for by the implementor and the user by controlling who has what information. The implementor worries about the details of the functor, the user worries about the details of the type parameter, and neither worries about anything else.
+
+Libraries often create a Functor to attach some kind of book keeping to any arbitrary data the user might have. In fact, that's all they can do, because they can't control the type parameter. One classic example is a tree. A tree is useful because many of its operations are fast, but often the user doesn't care that it's a tree. They just want to know that they can store things in it and that is operations will be fast. When the library writer creates their instance of Functor for their tree, they only worry about how to traverse the tree, which is in their wheelhouse because they're they ones making the damn thing. As a user, I now have a standard, simple way to apply transformations to every element in the tree with absolutely zero need to understand how it works. And if I'm writing another library that takes an abitrary functor as an argument, then I only need to worry about the types. I know I have a way to convert `f a` into `f b` and that's the end of the story.
+
+Functors facilitate reuse because often you've already got a function `a -> b` lying around from some other code you've written and by definition, you can reuse that function with any functor in existance. If you've got a function that sanitizes an email address, you can use it to sanitize a list of email addresses with zero effort. `sanitize myAddress` becomes `fmap sanitize myEmailAddresses`. And this works for the tremendous number of Functor instances out there.
+
+## Applicative
+
+
