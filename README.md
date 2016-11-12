@@ -1,5 +1,28 @@
 # Menagerie
 
+This is my attempt to make sense of the menagerie of typeclasses that are commonly used in Haskell. It is mostly a reinterpretation of my reading of [Typeclassopedia](https://wiki.haskell.org/Typeclassopedia) at this point.
+
+## Section Template
+
+This is the structure that each typeclass description will follow.
+
+```
+## <Typeclass Name>
+Freeform introductory comments about the typeclass.
+
+### Typeclass
+The Haskell definition of the typeclass.
+
+### Assumptions
+A list of simplifying assumptions that the typeclass allows us to make about its instances.
+
+### Laws
+A list of rules that a good instance of the typeclass will follow, even if the type system cannot check them.
+
+### Value
+An explanation of what value the typeclass provides. What does it let you do? Why would you make one yourself? How should you think about an instance of this typeclass provided by a library?
+```
+
 ## Abstraction
 
 Abstraction is a technique that is used to simplify problem solving and create compact, general solutions that we can use to solve a wide variety of problems.
@@ -22,10 +45,12 @@ I'll be demonstrating the common abstractions of Haskell. Haskell's abstractions
 
 The Functor typeclass is parameterized by one type, we'll call `f`. This means that for the purposes of the abstraction we are not allowed to know any specifics of `f` except those that we define in the abstraction.
 
-## Typeclass
+### Typeclass
 
+```
 class Functor f where
   fmap :: (a -> b) -> f a -> f b
+```
 
 ### Assumptions
 
@@ -42,8 +67,13 @@ Instances must, however, address the details of `f`.
 
 Assumptions that cannot be encoded directly in the type system are often called laws. Laws place restrictions on how an instance of the typeclass can behave. An instance that violates the laws will still compile, but there is no guarantee that the instance will behave correctly with other code because the code might be operating under the assumption that every instance also satisfies these less formal laws.
 
-* fmap id = id
-* fmap (g . h) = (fmap g) . (fmap h)
+* `fmap id = id`
+  * Mapping the `id` function over a functor has no effect on the functor or the values it contains.
+  * `fmap` has no side effects.
+
+* `fmap (g . h) = (fmap g) . (fmap h)`
+  * `fmap` is distributive over function composition.
+  * Because it has no side effects, applying fmap once is the same as applying it multiple times and composing the results.
 
 These laws are meant to ensure that fmap never alters the `f` it's being applied to. The benefit of that restriction is that it makes Functors easier to use. When you write an algorithm using `fmap`, you can totally ignore the `f` because the `fmap` can't change it anyway.
 
@@ -61,4 +91,41 @@ Functors facilitate reuse because often you've already got a function `a -> b` l
 
 ## Applicative
 
+Applicative is a lot like Functor, but it unlocks a whole world of possibilities by describing computation (the application of functions) inside of a context.
 
+### Typeclass
+
+```
+class Functor f => Applicative f where
+  pure  :: a -> f a
+  (<*>) :: f (a -> b) -> f a -> f b
+```
+
+### Assumptions
+
+* `f` is a type that has exactly one type parameter
+* `f` also has a Functor instance. This allows us to assume that if we have an applicative type, we can also use it as a functor for free. This is a fair assumption to make because you can mechanically generate an instance of Functor from an instance of Applicative.
+* No other assumptions are made about the nature of `f` itself or its type parameter `a`.
+
+### Laws
+
+* `pure id <*> v = v`
+  * Applying `id` in the context of a functor has the same meaning as applying `id` normally would.
+  * Applying a function in the context of a functor has no side effects.
+  * We can work with applicative computations the same way we would work with normal computations.
+
+* `pure f <*> pure x = pure (f x)`
+  * This is a generalizatino of the above law.
+  * Applying a function inside the context of a functor has the same meaning as applying the function outside of the context of the functor.
+
+* `u <*> pure y = pure ($ y) <*> u`
+  * The order of evaluation does not effect the meaning of of `<*>`, just as it would not with normal evaluation. Again, demonstrating the lack of side effects.
+
+* `u <*> (v <*> w) = pure (.) <*> u <*> v <*> w`
+  * Function composition has the same meaning inside of the context as it does outside.
+
+### Value
+
+Functor lets you execute computations on a type `a` embeded inside a structure `f` without modifying that structure. Put another way, Functor lets you perform ordinary computations on values living in a context. Applicative, with a seemingly minor addition, provides a framework for creating an entirely new language using ordinary functions. It does this by adding context to both the values _and_ the computations of an expression. The creator of a Functor gets no visibility into the computation happening inside of fmap. Applicative gives its creator a method for performing some book keeping at each computational step while still separating the book keeping from the computation itself. The power of this is that you can program in a completely normal style, but the result of your expression is not a final value, but instead a datastructure describing how to get the final value. That in turn lets you reinterpret the computation in any way you want.
+
+From this perspective, functions that work for any Applicative are providing ways to building descriptions of arbitrary computations and instances of Applicative are providing different interpreters for those descriptions.
