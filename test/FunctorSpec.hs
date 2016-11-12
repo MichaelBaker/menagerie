@@ -52,3 +52,18 @@ spec = do
         let actual   = fmap not (Compose ([Left 1, Right True, Right False]))
         let expected = [Left 1, Right False, Right True]
         extract actual `shouldBe` expected
+
+    describe "Maybe" $ do
+      it "applies to Just values" $ do
+        fmap (== 1) (Just 1) `shouldBe` (Just True)
+
+      it "applies to Nothing values" $ do
+        fmap (== 1) Nothing `shouldBe` Nothing
+
+      it "satisfies law 1" $ property $ \x ->
+        fmap id (x :: Maybe Int) == id (x :: Maybe Int)
+
+      it "satisfies law 2" $ property $ \x ->
+        let g = (> 0.1)
+            h = fromInteger
+        in fmap (g . h) (x :: Maybe Integer) == (fmap g (fmap h x))

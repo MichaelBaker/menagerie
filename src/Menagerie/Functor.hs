@@ -1,6 +1,6 @@
 module Menagerie.Functor where
 
-import Prelude (($), (.), Either(..))
+import Prelude (($), (.), Either(..), Maybe(..))
 
 class Functor f where
   fmap :: (a -> b) -> f a -> f b
@@ -19,6 +19,10 @@ instance Functor (Either l) where
 
 instance Functor ((->) a) where
   fmap g h  = g . h
+
+instance Functor Maybe where
+  fmap f (Just a) = Just (f a)
+  fmap _ Nothing  = Nothing
 
 newtype Compose a b c = Compose { extract :: a (b c) }
 instance (Functor a, Functor b) => Functor (Compose a b) where

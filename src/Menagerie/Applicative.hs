@@ -1,6 +1,6 @@
 module Menagerie.Applicative where
 
-import Prelude ()
+import Prelude (Maybe(..))
 import Menagerie.Functor
 
 (<$>) :: (Functor f) => (a -> b) -> f a -> f b
@@ -14,3 +14,8 @@ class Functor f => Applicative f where
 instance Applicative [] where
   pure a    = [a]
   fs <*> as = [f a | f <- fs, a <- as]
+
+instance Applicative Maybe where
+  pure a = Just a
+  (Just f) <*> (Just a) = Just (f a)
+  _        <*> _        = Nothing
